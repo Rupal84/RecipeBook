@@ -1,33 +1,40 @@
 import { Recipe } from './recipe-model';
-import { EventEmitter, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Ingredient } from '../shared/ingredient.model';
 import { ShoppingListService } from '../shopping-list/shopping-list.service';
+import { Subject } from 'rxjs';
 @Injectable()
 export class RecipeService {
-    selectedRecipe = new EventEmitter<Recipe>();
-    private recipes: Recipe[] = [
-        new Recipe( "Chicken Recipe", 
-        "Authentic south asian recipe",
-        "https://c1.wallpaperflare.com/preview/992/474/505/food-meat-recipe-power.jpg",
-        [
-            new Ingredient("Chicken", 1),
-            new Ingredient("Lemon", 5)
-        ]),
-        new Recipe( "Pickled Garlic", 
-        "A delicious pickle recipe",
-        "https://live.staticflickr.com/5836/30219331242_56aa4dfca9_b.jpg",
-        [
-            new Ingredient("Garlic", 50),
-            new Ingredient("Vinegar", 500)
-        ])
-      ];
+  private recipes: Recipe[] = [];
 
-      constructor(private slService: ShoppingListService) {}
-      getRecipes(){
-          return this.recipes.slice();
-      }
+  recipesChanged = new Subject<Recipe[]>();
 
-      addIngredientsToShoppingList(ingredients: Ingredient[]) {
-        this.slService.addIngredients(ingredients)
-      }
+  constructor(private slService: ShoppingListService) { }
+  setRecipes(recipes: Recipe[]) {
+    this.recipes = recipes;
+    this.recipesChanged.next(this.recipes.slice());
+  }
+  getRecipes() {
+    return this.recipes.slice();
+  }
+  getRecipe(id: number) {
+    return this.recipes[id];
+  }
+  addIngredientsToShoppingList(ingredients: Ingredient[]) {
+    this.slService.addIngredients(ingredients)
+  }
+
+  addRecipe(recipe: Recipe) {
+    this.recipes.push(recipe);
+    this.recipesChanged.next(this.recipes.slice());
+  }
+  updateRecipe(index: number, newRecipe: Recipe) {
+    this.recipes[index] = newRecipe;
+    this.recipesChanged.next(this.recipes.slice());
+  }
+
+  deleteRecipe(index: number) {
+    this.recipes.splice(index,1);
+    this.recipesChanged.next(this.recipes.slice());
+  }
 }
